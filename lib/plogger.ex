@@ -7,36 +7,28 @@ defmodule Plogger do
   to log intermediate results in a sequence of function
   calls.
 
-  params
-  |> Plogger.debug("Start")
-  |> some_function()
-  |> Plogger.debug("Step 1")
-  |> other_function()
-  |> Plogger.debug("Step 2")
+  ## Examples
+    iex()> require Plogger
+    iex()> params
+    ...>   |> Plogger.debug("Start")
+    ...>   |> some_function()
+    ...>   |> Plogger.debug("Step 1")
+    ...>   |> other_function()
+    ...>   |> Plogger.debug("Step 2")
 
   The Plogger lines can be added and removed without
   any further changes.
   """
 
-  require Logger
-
-  def info(payload, desc) do
-    Logger.info(desc <> ": " <> (inspect payload))
-    payload
-  end
-
-  def debug(payload, desc) do
-    Logger.debug(desc <> ": " <> (inspect payload))
-    payload
-  end
-
-  def warn(payload, desc) do
-    Logger.warn(desc <> ": " <> (inspect payload))
-    payload
-  end
-
-  def error(payload, desc) do
-    Logger.error(desc <> ": " <> (inspect payload))
-    payload
+  for level <- [:info, :debug, :warn, :error] do
+    defmacro unquote(level)(payload, desc, meta \\ []) do
+      level = unquote(level)
+      %{module: module, function: fun, file: file, line: line} = __CALLER__
+      meta = Keyword.merge([module: module, function: fun, file: file, line: line], meta)
+      quote bind_quoted: [level: level, payload: payload, desc: desc, meta: meta] do
+        Logger.bare_log(level, desc <> ": " <> inspect(payload), meta)
+        payload
+      end
+    end
   end
 end

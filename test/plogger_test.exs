@@ -1,5 +1,6 @@
 defmodule PloggerTest do
   use ExUnit.Case
+  require Plogger
 
   test "it works" do
     1

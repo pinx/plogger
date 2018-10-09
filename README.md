@@ -9,6 +9,8 @@ to log intermediate results in a sequence of function
 calls.
 
 ```elixir
+require Plogger
+
 params
 |> Plogger.debug("Start")
 |> some_function()
